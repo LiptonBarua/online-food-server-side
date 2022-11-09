@@ -23,11 +23,13 @@ async function run(){
      const dataCollection = client.db('assianment').collection('services');
 
      app.get('/service', async(req, res)=>{
+        // const page =parseInt(req.query.page);
+        // const size =parseInt(req.query.size)
         const query ={};
         const cursor = dataCollection.find(query);
         const service = await cursor.toArray();
-        // const count =await dataCollection.estimatedDocumentCount();
-        res.send(service)
+        const count = await dataCollection.estimatedDocumentCount();
+        res.send({count, service})
      })
 
        app.get('/service/:id', async(req, res)=>{
