@@ -21,6 +21,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run(){
     try{
      const dataCollection = client.db('assianment').collection('services');
+     const orderCollection = client.db('assianment').collection('orders');
 
      app.get('/service', async(req, res)=>{
         const page =parseInt(req.query.page);
@@ -41,6 +42,12 @@ async function run(){
 
      app.post('/service', async(req, res)=>{
         const result = await dataCollection.insertOne(req.body);
+     })
+
+     app.post('/orders', async(req, res)=>{
+        const order = req.body;
+        const result = await orderCollection.insertOne(order);
+        res.send(result); 
      })
     }
     finally{
