@@ -20,8 +20,54 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
   try {
+    const usersCollection = client.db('assianment').collection('users');
     const dataCollection = client.db('assianment').collection('services');
     const orderCollection = client.db('assianment').collection('orders');
+
+
+  // .......................User Collection........................
+
+
+
+  app.post('/users', async(req, res)=>{
+    const user=req.body;
+    const result= await usersCollection.insertOne(user);
+    res.send(result)
+  })
+
+ app.get('/users', async(req, res)=>{
+  const query={};
+  const result=await usersCollection.find(query).toArray();
+  res.send(result);
+ })
+
+ app.put('/profile', async(req, res)=>{
+  const userEmail=req.query.email;
+  const file=req.body;
+  const{email, name, position, education, image}=file;
+  const filter={email: userEmail};
+  const option = { upsert: true }
+  const updatedDoc={
+    $set: {
+      email, name, position, education, image
+    }
+  }
+  const result = await usersCollection.updateOne(filter, updatedDoc, option);
+  res.send(result)
+ })
+ 
+ app.get('/profile', async(req, res)=>{
+  let query={};
+  if(req.query.email){
+    query={
+      email:req.query.email
+    }
+  }
+
+  const result= await usersCollection.find(query).toArray();
+  res.send(result)
+ })
+  // .......................Service Collection........................
 
     app.get('/service', async (req, res) => {
       const page = parseInt(req.query.page);
@@ -34,6 +80,16 @@ async function run() {
     })
 
     app.get('/cards', async (req, res) => {
+      let query = {}
+      if(req.query.email){
+        query={
+          email: req.query.email
+        }
+      }
+      const result = await dataCollection.find(query).toArray();
+      res.send(result)
+    })
+    app.get('/services', async (req, res) => {
       const query = {}
       const result = await dataCollection.find(query).toArray();
       res.send(result)
@@ -46,14 +102,27 @@ async function run() {
       res.send(services);
     })
 
-    app.post('/service', async (req, res) => {
-      const result = await dataCollection.insertOne(req.body);
-      if (result.insertedId) {
-        res.send({
-          success: true,
-          message: `Successfully created the ${req.body.name} with id ${result.insertedId}`,
-        });
-      }
+    app.delete('/service/:id', async(req, res)=>{
+      const id=req.params.id;
+      const query={_id:ObjectId(id)}
+      const result=await dataCollection.deleteOne(query)
+      res.send(result)
+    })
+
+    // app.post('/service', async (req, res) => {
+    //   const result = await dataCollection.insertOne(req.body);
+    //   if (result.insertedId) {
+    //     res.send({
+    //       success: true,
+    //       message: `Successfully created the ${req.body.name} with id ${result.insertedId}`,
+    //     });
+    //   }
+    // })
+
+    app.post('/service', async(req, res)=>{
+      const service=req.body;
+      const result=await dataCollection.insertOne(service);
+      res.send(result)
     })
 
     // app.put('/rating', async (req, res) => {
@@ -90,6 +159,7 @@ async function run() {
 
     app.delete('/myReview/:id', async (req, res) => {
       const id = req.params.id;
+      console.log(id)
       const query = { _id: ObjectId(id) };
       const result = await orderCollection.deleteOne(query);
       res.send(result);
