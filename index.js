@@ -16,6 +16,7 @@ app.get('/', (req, res) => {
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ebocqiq.mongodb.net/?retryWrites=true&w=majority`;
+console.log(uri)
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
@@ -67,6 +68,35 @@ async function run() {
   const result= await usersCollection.find(query).toArray();
   res.send(result)
  })
+
+
+ app.put('/color', async(req, res)=>{
+  const userEmail=req.query.email;
+  const file=req.body;
+  const{color, email}=file;
+  const filter={email: userEmail};
+  const option = { upsert: true }
+  const updatedDoc={
+    $set: {
+      color,email
+    }
+  }
+  const result = await usersCollection.updateOne(filter, updatedDoc, option);
+  res.send(result)
+ })
+
+
+ app.get('/color', async(req, res)=>{
+  let query={};
+  if(req.query.email){
+    query={
+      email:req.query.email
+    }
+  }
+
+  const result= await usersCollection.find(query).toArray();
+  res.send(result)
+ })
   // .......................Service Collection........................
 
     app.get('/service', async (req, res) => {
@@ -89,6 +119,7 @@ async function run() {
       const result = await dataCollection.find(query).toArray();
       res.send(result)
     })
+
     app.get('/services', async (req, res) => {
       const query = {}
       const result = await dataCollection.find(query).toArray();
@@ -109,15 +140,6 @@ async function run() {
       res.send(result)
     })
 
-    // app.post('/service', async (req, res) => {
-    //   const result = await dataCollection.insertOne(req.body);
-    //   if (result.insertedId) {
-    //     res.send({
-    //       success: true,
-    //       message: `Successfully created the ${req.body.name} with id ${result.insertedId}`,
-    //     });
-    //   }
-    // })
 
     app.post('/service', async(req, res)=>{
       const service=req.body;
@@ -125,20 +147,7 @@ async function run() {
       res.send(result)
     })
 
-    // app.put('/rating', async (req, res) => {
-    //   const serviceEmail = req.query._id;
-    //   const body = req.body;
-    //   const {_id, name, email, message, phote, rating, date } = body;
-    //   const filter = { _id: serviceEmail }
-    //   const option = { upsert: true }
-    //   const updatedDoc = {
-    //     $set: {
-    //       name, email, message, phote, rating, date
-    //     }
-    //   }
-    //   const result = await dataCollection.updateOne(filter, updatedDoc, option)
-    //   res.send(result)
-    // })
+
 
     app.post('/rating', async (req, res) => {
       const order = req.body;
